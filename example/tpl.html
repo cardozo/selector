@@ -1,0 +1,45 @@
+<!-- htmlcs-disable -->
+<!DOCTYPE html>
+<html lang="zh-Hans">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="keywords" content="highlighter,tool,lib,website,frontend">
+        <meta name="description" content="Web Highlighter is a mini tool for highlighting website text. This page shows what it is and how to use it.">
+        <style>
+            main {
+                max-width: 760px;
+                margin: 20px auto;
+            }
+
+            img {
+                max-width: 100%;
+            }
+        </style>
+        <title>Web Highlighter: a mini tool for highlighting website text</title>
+    </head>
+    <body>
+        <main>
+            <h1 id="js-title" style="display: none">Web Highlighter</h1>
+            {{$markdown}}
+        </main>
+        <script>
+            void function () {
+                var img = document.getElementsByTagName('main')[0].getElementsByTagName('img')[0];
+                img.onerror = function() {
+                    document.getElementById('js-title').setAttribute('style', 'display: block');
+                };
+            }();
+        </script>
+        <section class="op-panel">
+            <div>
+                <label class="op-name">Modo Seleção：</label>
+                <label><input name="auto" type="radio" value="on" checked />Ao selecionar</label>
+                <label><input name="auto" type="radio" value="off" />Ao clicar botão de marcar seleção</label>
+            </div>
+            <button class="op-btn disabled" id="js-highlight" disabled >Marcar seleção</button>
+        
+        </section>
+    </body>
+</html>
