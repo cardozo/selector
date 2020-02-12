@@ -6,7 +6,7 @@
 
 import {wrapSelection, getSelectedNodes, normalizeSiblingText} from './dom-painter.service';
 import {getSelectionsByRoot, forEach} from '@src/util/dom';
-import {initDefaultStylesheet, initPurpleStylesheet} from './painter-style.service';
+import {initStylesheet} from './painter-style.service';
 import {
     WRAP_TAG,
     ID_DIVISION,
@@ -28,9 +28,10 @@ export default class Painter {
         this.hooks = hooks;
     }
 
-    updateOptions(options: SelectionOptions){
-
-        initPurpleStylesheet();
+    updateOptions(options: SelectionOptions, stylesheet?: string){
+        if(stylesheet){
+            initStylesheet(stylesheet);
+        }
 
         this.options = {
             $root: options.$root,

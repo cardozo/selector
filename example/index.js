@@ -4,8 +4,10 @@ import Selector from '../src/index';
 import LocalStore from './local.store';
 
 const selector = new Selector({
+    $root: document.getElementById('apostila'),
     exceptSelectors: ['.my-remove-tip', 'pre', 'code']
 });
+
 const store = new LocalStore();
 const log = console.log.bind(console, '[selector]');
 
@@ -21,22 +23,12 @@ const createTag = (top, left, id) => {
     $span.textContent = 'remove';
     $span.classList.add('my-remove-tip');
     document.body.appendChild($span);
-};
 
-/**
- * toggle auto highlighting & button status
- */
-const switchAuto = auto => {
-    auto === 'on' ? selector.run() : selector.stop();
-    const $btn = document.getElementById('js-highlight');
-    if (auto === 'on') {
-        $btn.classList.add('disabled');
-        $btn.setAttribute('disabled', true);
-    }
-    else {
-        $btn.classList.remove('disabled');
-        $btn.removeAttribute('disabled');
-    }
+    $span.addEventListener('click', function() {
+        log('*click remove-tip*', this.dataset.id);
+        selector.remove(this.dataset.id);
+        this.parentNode.removeChild(this);
+    });
 };
 
 function getPosition($node) {
@@ -57,15 +49,14 @@ function getPosition($node) {
  * selector event listener
  */
 selector
-    .on(Selector.event.HOVER, ({id}) => {
-        log('hover -', id);
-        selector.addClass('highlight-wrap-hover', id);
+    .on(Selector.event.HOVER, (param) => {
+        log('hover -', param.id);
     })
-    .on(Selector.event.HOVER_OUT, ({id}) => {
-        log('hover out -', id);
-        selector.removeClass('highlight-wrap-hover', id);
+    .on(Selector.event.HOVER_OUT, (param) => {
+        log('hover out -', param.id);
     })
-    .on(Selector.event.CREATE, ({sources}) => {
+    .on(Selector.event.CREATE, (param) => {
+        let sources = param.sources;
         log('create -', sources);
         sources.forEach(s => {
             const position = getPosition(selector.getDoms(s.id)[0]);
@@ -74,9 +65,29 @@ selector
         sources = sources.map(hs => ({hs}));
         store.save(sources);
     })
-    .on(Selector.event.REMOVE, ({ids}) => {
+    .on(Selector.event.REMOVE, (param) => {
+        const ids = param.ids;
         log('remove -', ids);
         ids.forEach(id => store.remove(id));
+    })
+    .on(Selector.event.MODIFY, (param) => {
+        log('modify -', param, arguments);
+    })
+    .on(Selector.event.SELECT, (range) => {
+        log('SELECT', range);
+    })
+    .on(Selector.event.RELEASE, (range) => {
+        log('RELEASE', range);
+
+        if(range && activeStyle) {
+            selector.makeSelection(range);
+        }
+    })
+    .on(Selector.event.UNSELECT, () => {
+        log('unselect');
+    })
+    .on(Selector.event.CLICK, (param, selectorRef, event) => {
+        log('click -', param.id, selectorRef, event);
     });
 
 /**
@@ -94,55 +105,54 @@ storeInfos.forEach(
     ({hs}) => selector.fromStore(hs.startMeta, hs.endMeta, hs.text, hs.id)
 );
 
-let autoStatus;
-document.querySelectorAll('[name="auto"]').forEach($n => {
-    if ($n.checked) {
-        autoStatus = $n.value;
-    }
-});
-switchAuto(autoStatus);
+let activeStyle = null;
 
-document.addEventListener('click', e => {
-    const $ele = e.target;
+selector.run();
 
-    
-    if ($ele.classList.contains('my-remove-tip')) {
-        const id = $ele.dataset.id;
-        log('*click remove-tip*', id);
-        selector.removeClass('highlight-wrap-hover', id);
-        selector.remove(id);
-        $ele.parentNode.removeChild($ele);
-    }
-    
-    else if ($ele.getAttribute('name') === 'auto') {
-        const val = $ele.value;
-        if (autoStatus !== val) {
-            switchAuto(val);
-            autoStatus = val;
+/**
+ * Atualiza o estilo de pintura dentro da lib
+ */
+function updatePaintingStyle(className, style) {
+    const options = {
+        style: { className }
+    };
+    selector.updateOption(options, style);
+}
+
+/**
+ * Liga todos os botões ou apenas um, para a pintura instantânea
+ */
+function toggleStyleButtons(button, className) {
+    if (activeStyle == className) {
+        activeStyle = null;
+        for(const paintButton of document.getElementsByClassName('paintbox__button')) {
+            paintButton.classList.remove('paintbox__button--disable');
         }
-    }
-    
-    else if ($ele.id === 'js-highlight') {
-        const selection = window.getSelection();
-        if (selection.isCollapsed) {
-            return;
+    } else {
+        activeStyle = className;
+        for(const paintButton of document.getElementsByClassName('paintbox__button')) {
+            paintButton.classList.add('paintbox__button--disable');
         }
-        selector.fromRange(selection.getRangeAt(0));
-        window.getSelection().removeAllRanges();
+        button.classList.remove('paintbox__button--disable');
     }
-});
+}
 
-let hoveredTipId;
-document.addEventListener('mouseover', e => {
-    const $ele = e.target;
-    
-    if ($ele.classList.contains('my-remove-tip') && hoveredTipId !== $ele.dataset.id) {
-        hoveredTipId = $ele.dataset.id;
-        selector.removeClass('highlight-wrap-hover');
-        selector.addClass('highlight-wrap-hover', hoveredTipId);
-    }
-    else if (!$ele.classList.contains('my-remove-tip')) {
-        selector.removeClass('highlight-wrap-hover', hoveredTipId);
-        hoveredTipId = null;
-    }
-});
+/**
+ * Altera o estilo de pintura e controla a aparência dos botões de estilo 
+ */
+function togglePaintingStyle(button, className) {
+    updatePaintingStyle(className);
+    toggleStyleButtons(button, className);   
+    selector.makeActionFromSelection();
+}
+
+/**
+ * Ativa o click de cada botão de estilo
+ */
+for(const paintboxButton of document.getElementsByClassName('paintbox__button')) {
+    paintboxButton.addEventListener('click', (event) => {
+        const button = event.target;
+        const className = 'selection-' + button.getAttribute('selection-style');
+        togglePaintingStyle(button, className);
+    });
+}

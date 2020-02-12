@@ -170,6 +170,7 @@ function wrapNewNode(
     element.setAttribute(`data-${DATASET_IDENTIFIER}`, range.id);
     element.setAttribute(`data-${DATASET_SPLIT_TYPE}`, selected.splitType);
     element.setAttribute(`data-${DATASET_IDENTIFIER_EXTRA}`, '');
+    element.setAttribute('id', range.id);
 
     return element;
 }
@@ -194,6 +195,7 @@ function wrapPartialNode(
 
     element.setAttribute(`data-${DATASET_IDENTIFIER}`, range.id);
     element.setAttribute(`data-${DATASET_IDENTIFIER_EXTRA}`, extraInfo);
+    element.setAttribute('id', range.id);
     element.appendChild(selected.$node.cloneNode(false));
 
     let headSplit = false;

@@ -2,7 +2,7 @@ import '@src/util/dataset.polyfill';
 import EventEmitter from '@src/util/event.emitter';
 import {EventType, SelectionOptions, ERROR, DomNode, DomMeta, HookMap} from './model/selection-types.model';
 import {isSelectionWrapNode, getSelectionById, getSelectionsByRoot, getSelectionId} from '@src/util/dom';
-import {DEFAULT_OPTIONS, PURPLE_OPTIONS} from '@src/util/const';
+import {DEFAULT_OPTIONS, STYLESHEET_TEXT} from '@src/util/const';
 import uuid from '@src/util/uuid';
 import Hook from '@src/util/hook';
 import Cache from '@src/data/cache';
@@ -19,12 +19,14 @@ export default class Selector extends EventEmitter {
     painter: Painter;
     cache: Cache;
 
+    lastCreated: SelectionSource;
+
     constructor(options: SelectionOptions) {
         super();
-        this.options = PURPLE_OPTIONS;
+        this.options = DEFAULT_OPTIONS;
         
         this.hooks = this._getHooks();
-        this.setOption(options)
+        this.setOption(options, STYLESHEET_TEXT)
         
         this.cache = new Cache();
         
@@ -55,22 +57,45 @@ export default class Selector extends EventEmitter {
         }
         this.cache.save(source);
         this.emit(EventType.CREATE, {sources: [source], type: 'from-input'}, this);
+        this.lastCreated = source;
         return source;
     }
 
     private _highlighFromHSource(sources: SelectionSource[] | SelectionSource = []) {
-        const renderedSources: Array<SelectionSource> = this.painter.selectionSource(sources);;
+        const renderedSources: Array<SelectionSource> = this.painter.selectionSource(sources);
         this.emit(EventType.CREATE, {sources: renderedSources, type: 'from-store'}, this);
+        this.lastCreated = renderedSources[renderedSources.length -1];
         this.cache.save(sources);
     }
 
     private _handleSelection = (e?: Event) => {
-        
         const range = SelectionRange.fromSelection(this.hooks.Render.UUID);
-        
+
         if (range) {
-            this._selectionFromHRange(range);
-            SelectionRange.removeDomRange();
+            this.emit(EventType.SELECT, range);
+        } else {
+            this.emit(EventType.UNSELECT);
+        }
+    }
+
+    private _handleReleased = (e?: Event) => {
+        const range = SelectionRange.fromSelection(this.hooks.Render.UUID);
+
+        if (range) {
+            this.emit(EventType.RELEASE, range);
+        }
+    }
+
+    public makeSelection(range: SelectionRange) {
+        this._selectionFromHRange(range);
+        SelectionRange.removeDomRange();
+    }
+
+    public makeActionFromSelection() {
+        const range = SelectionRange.getDomRange();
+        if(range) {
+            this.fromRange(range);
+            window.getSelection().removeAllRanges();
         }
     }
 
@@ -103,8 +128,24 @@ export default class Selector extends EventEmitter {
         }
     }
 
-    run = () => this.options.$root.addEventListener('mouseup', this._handleSelection);
-    stop = () => this.options.$root.removeEventListener('mouseup', this._handleSelection);
+    run = () => {
+        document.addEventListener('selectionchange', this._handleSelection);
+        if('ontouchstart' in document.documentElement) {
+            this.options.$root.addEventListener('touchend', this._handleReleased);
+        } else {
+            this.options.$root.addEventListener('mouseup', this._handleReleased);
+        }
+    };
+
+    stop = () => {
+        document.removeEventListener('selectionchange', this._handleSelection);
+        if('ontouchstart' in document.documentElement) {
+            this.options.$root.removeEventListener('touchend', this._handleReleased);
+        } else {
+            this.options.$root.removeEventListener('mouseup', this._handleReleased);
+        }
+    };
+
     addClass = (className: string, id?: string) => this.getDoms(id).forEach($n => $n.classList.add(className));
     removeClass = (className: string, id?: string) => this.getDoms(id).forEach($n => $n.classList.remove(className));
     getIdByDom = ($node: HTMLElement): string => getSelectionId($node);
@@ -114,12 +155,17 @@ export default class Selector extends EventEmitter {
 
     dispose = () => {
         this.options.$root.removeEventListener('mouseover', this._handleSelectionHover);
-        this.options.$root.removeEventListener('mouseup', this._handleSelection);
+        document.removeEventListener('selectionchange', this._handleSelection);
+        if('ontouchstart' in document.documentElement) {
+            this.options.$root.removeEventListener('touchend', this._handleReleased);
+        } else {
+            this.options.$root.removeEventListener('mouseup', this._handleReleased);
+        }
         this.options.$root.removeEventListener('click', this._handleSelectionClick);
         this.removeAll();
     }
 
-    setOption = (options: SelectionOptions) => {
+    setOption = (options: SelectionOptions, stylesheet?: string) => {
 
         this.options = {
             ...this.options,
@@ -127,11 +173,16 @@ export default class Selector extends EventEmitter {
         };
 
         this.painter = new Painter(this.hooks);
-        this.painter.updateOptions(this.options);
+        this.painter.updateOptions(this.options, stylesheet);
     }
 
-    updateOption = (options: SelectionOptions) =>{
-        this.painter.updateOptions(this.options);
+    updateOption = (options: SelectionOptions, stylesheet?: string) =>{
+        this.options = {
+            ...this.options,
+            ...options
+        };
+
+        this.painter.updateOptions(this.options, stylesheet);
     }
 
     fromRange = (range: Range): SelectionSource => {

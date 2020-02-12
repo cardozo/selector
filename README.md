@@ -1,4 +1,4 @@
-# Selector
+# Fast Selector
 
 
 
@@ -12,6 +12,12 @@ npm install
 ### Compila
 ```
 npm start
+```
+
+
+### Build
+```
+npm run build
 ```
 
 

@@ -41,6 +41,9 @@ export enum EventType {
     HOVER = 'selection:hover',
     HOVER_OUT = 'selection:hover-out',
     CLICK = 'selection:click',
+    SELECT = 'selection:select',
+    UNSELECT = 'selection:unselect',
+    RELEASE = 'selection:release',
 };
 
 export enum SelectedNodeType {

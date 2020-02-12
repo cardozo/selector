@@ -28,6 +28,7 @@ class SelectionRange {
     }
 
     static removeDomRange = removeSelection;
+    static getDomRange = getDomRange;
 
     static fromSelection(idHook: Hook) {
         // debugger;

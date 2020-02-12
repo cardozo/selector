@@ -1,20 +1,6 @@
-h1:first-child {
+h1 {
     color: #3c86c7;
     padding-bottom: 0;
-}
-
-h1 + blockquote {
-    box-shadow: inset 5px 0 #ddd;
-}
-
-h1 + blockquote p {
-    margin-top: 10px;
-    color: #aaa;
-    margin-bottom: 40px;
-}
-
-main .highlight-wrap-hover {
-    background: #f7aaaa;
 }
 
 .my-remove-tip {
@@ -45,59 +31,55 @@ main .highlight-wrap-hover {
     width: 0;
 }
 
-.op-panel {
+.paintbox {
     box-sizing: border-box;
-    padding: 1px 5px 6px 8px;
+    padding: 5px 5px 0px 5px;
     position: fixed;
-    top: 50px;
-    left: 15px;
-    background: rgba(0, 0, 0, .1);
+    bottom: 15px;
+    right: 15px;
+    background: rgba(180, 180, 180, .9);
     border-radius: 3px;
     border: 1px dashed #aaa;
 }
 
-.op-panel a {
-    position: absolute;
-    right: 10px;
-    bottom: 12px;
-    height: 18px;
-    width: 18px;
-    opacity: .7;
+.paintbox__button {
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    margin: 0 0 5px 0;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    box-shadow: none !important;
 }
 
-.op-panel a:hover {
-    opacity: 1;
+.paintbox__button--underline { background-color: #444; text-decoration: underline; }
+.paintbox__button--blue { background-color: #1fcae4; }
+.paintbox__button--red { background-color: #ff6769; }
+.paintbox__button--yellow { background-color: #ffcc00; }
+.paintbox__button--green { background-color: #6dbe55; }
+
+.paintbox__button--disable { opacity: 0.5; }
+
+.selection-underline,
+.selection-blue,
+.selection-red,
+.selection-yellow,
+.selection-green {
+    cursor: pointer;
 }
 
-.op-panel svg {
-    height: 18px;
-    width: 18px;
-}
+.selection-underline { text-decoration: underline; }
+.selection-underline:hover { background: #ccc; }
 
-.op-panel input[type="radio"] {
-    opacity: 1;
-    width: auto;
-    position: static;
-    line-height: normal;
-    height: 15px;
-    vertical-align: middle;
-    margin-right: 5px;
-}
+.selection-blue { background: #1fcae4; }
+.selection-blue:hover { background: #14afc7; }
 
-.op-panel .op-name {
-    margin-right: 0;
-}
+.selection-red { background: #ff6769; }
+.selection-red:hover { background: #e25255; }
 
-.op-panel label {
-    font-size: 12px;
-    margin-right: 2px;
-}
+.selection-yellow { background: #ffcc00; }
+.selection-yellow:hover { background: #d1a700; }
 
-.op-panel .op-btn {
-    display: block;
-    font-size: 12px;
-}
-
-.op-panel .op-btn.disabled {
-    cursor: not-allowed;
-}
+.selection-green { background: #6dbe55; }
+.selection-green:hover { background: #5aa544; }

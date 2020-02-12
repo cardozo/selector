@@ -2,7 +2,7 @@ import camel from './camel';
 export const ID_DIVISION = ';';
 export const LOCAL_STORE_KEY = 'selection';
 export const STYLESHEET_ID = 'selection-style';
-export const WRAP_TAG = 'span';
+export const WRAP_TAG = 'comp';
 
 export const DATASET_IDENTIFIER = 'selection-id';
 export const DATASET_IDENTIFIER_EXTRA = 'selection-id-extra';
@@ -15,35 +15,16 @@ export const DEFAULT_OPTIONS = {
     $root: window.document.documentElement,
     exceptSelectors: null,
     style: {
-        className: 'selection-wrap'
+        className: 'selection-purple'
     }
 };
 
 export const STYLESHEET_TEXT = `
     .${DEFAULT_OPTIONS.style.className} {
-        background: #ff9;
-        cursor: pointer;
-    }
-    .${DEFAULT_OPTIONS.style.className}.active {
-        background: #ffb;
-    }
-`;
-
-
-export const PURPLE_OPTIONS = {
-    $root: window.document.documentElement,
-    exceptSelectors: null,
-    style: {
-        className: 'selection-purple'
-    }
-};
-
-export const STYLESHEET_TEXT_PURPLE = `
-    .${PURPLE_OPTIONS.style.className} {
         background: #a119e0;
         cursor: pointer;
     }
-    .${PURPLE_OPTIONS.style.className}.active {
-        background: #a119e0;
+    .${DEFAULT_OPTIONS.style.className}:hover {
+        background: #f7aaaa;
     }
 `;
